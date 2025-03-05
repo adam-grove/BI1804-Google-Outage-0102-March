@@ -1,0 +1,13 @@
+
+
+-- By month
+select 
+date_trunc(date, week(monday)),
+sum(spend) as spend,
+sum(total_revenue) as total_revenue
+from `data_marts.channel_performance`
+where 1=1
+  and date between date_sub(current_date(), interval 6 month) and current_date() -1 
+  and default_channel_grouping = "Paid Search"
+  and country = "UK"
+group by date_trunc(date, week(monday))
