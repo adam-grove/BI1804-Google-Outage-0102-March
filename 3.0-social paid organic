@@ -1,0 +1,35 @@
+
+
+with dates as 
+(
+  select date from 
+    unnest([
+      date "2025-03-01", date "2025-03-02", -- ads down
+      date "2025-02-22", date "2025-02-23", -- weekend 4
+      date "2025-02-15", date "2025-02-16", -- weekend 3
+      date "2025-02-08", date "2025-02-09", -- weekend 2
+      date "2025-02-01", date "2025-02-02" -- weekend 1
+    ]) as date
+)
+
+select
+case 
+when transaction_date = "2025-02-01" or transaction_date = "2025-02-02" then "weekend_1"
+when transaction_date = "2025-02-08" or transaction_date = "2025-02-09" then "weekend_2"
+when transaction_date = "2025-02-15" or transaction_date = "2025-02-16" then "weekend_3"
+when transaction_date = "2025-02-22" or transaction_date = "2025-02-23" then "weekend_4"
+when transaction_date = "2025-03-01" or transaction_date = "2025-03-02" then "ads_down"
+end as weekend,
+transaction_date,
+default_channel_grouping,
+category_1 as product_category,
+config_sku,
+sum(item_quantity) as item_quantity,
+sum(price_sold_gbp * item_quantity ) as total_revenue
+from `data_marts.transaction_products`
+where 1=1
+  and transaction_date in (select date from dates)
+  and country = "UK"
+  and default_channel_grouping in ("Paid Search","Organic Search")
+group by transaction_date, default_channel_grouping,product_category,config_sku
+order by default_channel_grouping,transaction_date asc
